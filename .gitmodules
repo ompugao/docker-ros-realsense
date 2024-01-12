@@ -1,0 +1,10 @@
+[submodule "common_pkgs/crigroup/robotiq"]
+	path = common_pkgs/crigroup/robotiq
+	url = https://github.com/crigroup/robotiq
+[submodule "common_pkgs/crigroup/osr_course_pkgs"]
+	path = common_pkgs/crigroup/osr_course_pkgs
+	url = https://github.com/crigroup/osr_course_pkgs
+[submodule "common_pkgs/bi3ri/robotiq"]
+	path = common_pkgs/bi3ri/robotiq
+	url = https://github.com/bi3ri/robotiq-crigroup
+	branch = noetic
