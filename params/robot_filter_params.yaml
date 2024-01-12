@@ -1,0 +1,16 @@
+fixed_frame: /world
+camera_frame: /camera_depth_optical_frame
+camera_offset:
+  translation: [0.0, 0.0, 0.0]
+  rotation:    [0.0, 0.0, 0.0, 1.0]
+# There is one entry for each URDF that should be filtered
+models:
+- model: "robot_description"
+  tf_prefix: "/denso"
+  geometry_type: "collision" # "visual" or "collision"
+  scale: 1.0
+  ignore: []
+# how far in front of the robot model is still deleted? (e.g. 0.05 = 5cm)
+depth_distance_threshold: 0.1
+show_gui: true
+filter_replace_value: 5.0

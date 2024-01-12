@@ -1,0 +1,59 @@
+<launch>
+  <arg name="nodelet_manager" default="manager"/>
+  <arg name="camera" default="camera"/>
+
+  <arg name="align_depth"         value="true"/>
+  <!-- realsense -->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+    <arg name="camera"              value="$(arg camera)"/>
+    <arg name="tf_prefix"           value="$(arg camera)"/>
+    <arg name="external_manager"    value="false"/>
+    <arg name="manager"             value="$(arg nodelet_manager)"/>
+
+    <arg name="enable_depth"        value="true"/>
+    <arg name="enable_color"        value="true"/>
+    <arg name="enable_gyro"         value="false"/>
+    <arg name="enable_accel"        value="false"/>
+
+    <arg name="enable_pointcloud"   value="false"/>
+    <arg name="enable_sync"         value="true"/>
+    <arg name="align_depth"         value="$(arg align_depth)"/>
+    <arg name="filters"             value=""/>
+
+    <arg name="publish_tf"          value="false"/>
+    <arg name="tf_publish_rate"     value="0"/> <!-- 0 - static transform -->
+
+    <!-- Processing Modules -->
+    <arg name="rgb_processing"                  value="true"/>
+    <arg name="debayer_processing"              value="false" />
+    <arg name="ir_processing"                   value="false"/>
+    <arg name="depth_processing"                value="false"/>
+    <arg name="depth_registered_processing"     value="true"/>
+    <arg name="disparity_processing"            value="false"/>
+    <arg name="disparity_registered_processing" value="false"/>
+    <arg name="hw_registered_processing"        value="$(arg align_depth)" />
+    <arg name="sw_registered_processing"        value="true" unless="$(arg align_depth)" />
+    <arg name="sw_registered_processing"        value="false" if="$(arg align_depth)" />
+  </include>
+
+  <!-- robot filter -->
+  <node pkg="nodelet" type="nodelet" name="realtime_urtf_filter_nodelet" args="load realtime_urdf_filter/RealtimeURDFFilterNodelet $(arg camera)/$(arg nodelet_manager)" output="screen">
+    <remap from="~input_depth" to="/camera/depth/image_rect_raw"/> <!-- /camera/aligned_depth_to_color/image_raw -->
+    <remap from="~output_depth" to="/camera/depth_filtered/image_rect_raw" />
+    <remap from="~output_mask" to="/urdf_filtered_mask" />
+
+    <rosparam command="load" file="/workspace/params/robot_filter_params.yaml"/>
+  </node>
+
+  <!--<node name="static_sensor_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.4 -1.3 0.6 -0.59385832 -0.24598417 0.29315252 0.70773278 world camera_link"/>-->
+  <node name="static_sensor_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.4 -1.3 0.6 -0.59385832 -0.24598417 0.29315252 0.70773278 world camera_depth_optical_frame"/>
+  <node name="static_world_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 world denso/world"/>
+  <!-- Load an exajple URDF -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find osr_description)/urdf/denso_robotiq_85_gripper.urdf.xacro'"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="tf_prefix" value="/denso"/>
+    <param name="publish_frequency" value="30.0"/>
+  </node>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+</launch>
