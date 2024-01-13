@@ -44,26 +44,47 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
   ros-${ROS_DISTRO}-image-transport-plugins \
   ros-${ROS_DISTRO}-image-transport \
   ros-${ROS_DISTRO}-rviz \
+  ros-${ROS_DISTRO}-pcl-ros \
   git
 
 RUN rosdep update
+
+RUN mkdir -p /workspace
 
 RUN mkdir -p /catkin_ws/src && cd /catkin_ws/src && \
   git clone --depth 1 https://github.com/IntelRealSense/realsense-ros.git --branch ros1-legacy IntelRealSense/realsense-ros && \
   git clone --depth 1 https://github.com/pal-robotics/ddynamic_reconfigure pal-robotics/ddynamic_reconfigure &&\
   git clone --depth 1 https://github.com/blodow/realtime_urdf_filter blodow/realtime_urdf_filter
-COPY patches /patches
-RUN patch -f -p1 -d /catkin_ws/src/blodow/realtime_urdf_filter < /patches/wait_for_robot_tfs.patch
+COPY patches /workspace/patches
+RUN patch -f -p1 -d /catkin_ws/src/blodow/realtime_urdf_filter < /workspace/patches/wait_for_robot_tfs.patch
 COPY common_pkgs/crigroup/osr_course_pkgs/osr_description /catkin_ws/src/crigroup/osr_description
 COPY common_pkgs/bi3ri/robotiq/robotiq_description /catkin_ws/src/bi3ri/robotiq/robotiq_description
-#RUN mv /bin/sh /bin/sh_tmp && ln -s /bin/bash /bin/sh
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked \
 	cd catkin_ws; bash -c 'source /opt/ros/${ROS_DISTRO}/setup.bash; rosdep install -y --ignore-src --from-paths src && catkin build -DCATKIN_ENABLE_TESTING=False -DCMAKE_BUILD_TYPE=Release' && rm -rf build
-#RUN rm /bin/sh && mv /bin/sh_tmp /bin/sh
 RUN touch /root/.bashrc && \
   echo "source /catkin_ws/devel/setup.bash\n" >> /root/.bashrc && \
   echo "rossetip\n" >> /root/.bashrc && \
   echo "rossetmaster localhost"
+
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked apt -q -qq update && \
+  DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated \
+  python3-pip
+
+# generate padded robot for pointcloud filtering
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked apt -q -qq update && \
+  DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated \
+  python3-pyqt5
+RUN --mount=type=cache,target=/root/.cache/pip pip3 install pymeshlab pyqt5==5.15
+COPY ./scripts /workspace/scripts
+# NOTE: set LD_LIBRARY_PATH for appropriate pyqt5 importing in pymeshlab
+RUN cd /workspace/scripts && LD_LIBRARY_PATH=/usr/local/lib/python$(python3 --version |cut -d ' ' -f 2|cut -d '.' -f 1,2)/dist-packages/ bash pad_meshes.sh /catkin_ws/src/crigroup/osr_description/urdf/meshes 0.03
+RUN cp -a /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060.urdf /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060_pad.urdf \
+	&& sed -i -e 's/\.stl/_pad.stl/g' /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060_pad.urdf \
+	&& cp -a /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060_robot.urdf.xacro /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060_robot_pad.urdf.xacro \
+	&& sed -i -e 's/denso_vs060\.urdf/denso_vs060_pad.urdf/g' /catkin_ws/src/crigroup/osr_description/urdf/denso_vs060_robot_pad.urdf.xacro \
+	&& cp -a /catkin_ws/src/crigroup/osr_description/urdf/denso_robotiq_85_gripper.urdf.xacro /catkin_ws/src/crigroup/osr_description/urdf/denso_pad_robotiq_85_gripper.urdf.xacro \
+	&& sed -i -e 's/denso_vs060_robot\.urdf\.xacro/denso_vs060_robot_pad.urdf.xacro/g' /catkin_ws/src/crigroup/osr_description/urdf/denso_pad_robotiq_85_gripper.urdf.xacro
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked apt -q -qq update && \
   DEBIAN_FRONTEND=noninteractive apt install -y --allow-unauthenticated \
@@ -71,10 +92,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,t
   gdb \
   vim
 
+WORKDIR /workspace
+
 COPY ./ros_entrypoint.sh /
 ENTRYPOINT ["/ros_entrypoint.sh"]
-
-RUN mkdir -p /workspace
-WORKDIR /workspace
 
 CMD ["bash"]
