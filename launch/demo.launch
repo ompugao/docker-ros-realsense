@@ -62,10 +62,11 @@
     </node>
   </group>
 
+  <node name="static_world_map_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 camera_in_openrave camera_link" />
   <!--<node name="static_sensor_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.4 -1.3 0.6 -0.59385832 -0.24598417 0.29315252 0.70773278 world camera_link"/>-->
-  <node name="static_sensor_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.4 -1.3 0.6 -0.59385832 -0.24598417 0.29315252 0.70773278 world camera_in_openrave" />
+  <!--<node name="static_sensor_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.4 -1.3 0.6 -0.59385832 -0.24598417 0.29315252 0.70773278 world camera_in_openrave" />-->
   <node name="static_rave_to_camera_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.5 -0.5  0.5 0.5 camera_in_openrave camera_link" />
-  <node name="static_world_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 world denso/world"/>
+  <!--<node name="static_world_tf" pkg="tf2_ros" type="static_transform_publisher" args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 world denso/world"/>-->
   <!-- Load an exajple URDF -->
   <param name="robot_description" command="$(find xacro)/xacro '$(find osr_description)/urdf/denso_pad_robotiq_85_gripper.urdf.xacro'"/>
 
@@ -73,7 +74,9 @@
     <param name="tf_prefix" value="/denso"/>
     <param name="publish_frequency" value="30.0"/>
   </node>
+  <!--
   <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+  -->
 
 
   <!-- Publish registered XYZRGB point cloud with hardware registered input (ROS Realsense depth alignment) -->

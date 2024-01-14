@@ -1,0 +1,43 @@
+diff --git a/package.xml b/package.xml
+index 026a690..0b94707 100644
+--- a/package.xml
++++ b/package.xml
+@@ -33,7 +33,7 @@
+   <build_depend>libopenni-dev</build_depend>
+ 
+   <export>
+-    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
++      <nodelet plugin="${prefix}/plugins/nodelet_plugins.xml" />
+   </export>
+ 
+ </package>
+diff --git a/src/urdf_renderer.cpp b/src/urdf_renderer.cpp
+index d1631c4..9173207 100644
+--- a/src/urdf_renderer.cpp
++++ b/src/urdf_renderer.cpp
+@@ -175,15 +175,25 @@ namespace realtime_urdf_filter
+     tf::StampedTransform t;
+ 
+     std::vector<std::shared_ptr<Renderable> >::const_iterator it = renderables_.begin ();
++    // const auto twait = ros::Duration(0.1);
+     for (; it != renderables_.end (); it++)
+     {
+       try
+       {
++        //tf_.waitForTransform (fixed_frame_, (*it)->name, timestamp, twait);
+         tf_.lookupTransform (fixed_frame_, (*it)->name, timestamp, t);
+       }
+       catch (const tf::TransformException &ex)
+       {
+         ROS_DEBUG_STREAM(ex.what());
++        try
++        {
++          tf_.lookupTransform (fixed_frame_, (*it)->name, ros::Time(0), t);
++        }
++        catch (const tf::TransformException &ex)
++        {
++          ROS_DEBUG_STREAM(ex.what());
++	}
+       }
+       (*it)->link_to_fixed = tf::Transform (t.getRotation (), t.getOrigin ());
+     }

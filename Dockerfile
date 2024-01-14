@@ -56,7 +56,7 @@ RUN mkdir -p /catkin_ws/src && cd /catkin_ws/src && \
   git clone --depth 1 https://github.com/pal-robotics/ddynamic_reconfigure pal-robotics/ddynamic_reconfigure &&\
   git clone --depth 1 https://github.com/blodow/realtime_urdf_filter blodow/realtime_urdf_filter
 COPY patches /workspace/patches
-RUN patch -f -p1 -d /catkin_ws/src/blodow/realtime_urdf_filter < /workspace/patches/wait_for_robot_tfs.patch
+RUN patch -f -p1 -d /catkin_ws/src/blodow/realtime_urdf_filter < /workspace/patches/use_latest_robot_tfs.patch # wait_for_robot_tfs.patch
 COPY common_pkgs/crigroup/osr_course_pkgs/osr_description /catkin_ws/src/crigroup/osr_description
 COPY common_pkgs/bi3ri/robotiq/robotiq_description /catkin_ws/src/bi3ri/robotiq/robotiq_description
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked \
