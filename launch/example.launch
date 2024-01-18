@@ -96,4 +96,13 @@
     </node>
     -->
   </group>
+
+  <group ns="$(arg camera)">
+    <node pkg="nodelet" type="nodelet" name="binary_occupancies_nodelet"
+          args="load simple_voxelizer/SimpleVoxelizerNodelet $(arg nodelet_manager) false" respawn="true">
+      <remap from="~input"        to="depth_robot_filtered/points" />
+      <remap from="~output"     to="depth_robot_filtered/binary_occupancies" />
+      <rosparam command="load" file="/workspace/params/voxelizer_params.yaml"/>
+    </node>
+  </group>
 </launch>

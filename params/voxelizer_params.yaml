@@ -1,0 +1,4 @@
+world_frame_id: "world"
+env_center: [-0.6, -0.3, 0.5]
+env_range: [0.6, 0.3, 0.5]
+env_resolution : 0.04
