@@ -8,3 +8,9 @@
 	path = common_pkgs/bi3ri/robotiq
 	url = https://github.com/bi3ri/robotiq-crigroup
 	branch = noetic
+[submodule "catkin_ws/ompugao/simple_voxelizer"]
+	path = catkin_ws/ompugao/simple_voxelizer
+	url = https://github.com/ompugao/simple_voxelizer
+[submodule "catkin_ws/ompugao/simple_voxelizer_msgs"]
+	path = catkin_ws/ompugao/simple_voxelizer_msgs
+	url = https://github.com/ompugao/simple_voxelizer_msgs
